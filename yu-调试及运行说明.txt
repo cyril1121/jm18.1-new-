@@ -1,0 +1,13 @@
+调试：
+一、TraceFile
+Class: Text
+Description: Bitstream Tracefile. File is useful for debugging. To enable, code needs to be compiled by setting the define TRACE in defines.h to 1. 生成trace_enc.txt文件
+
+Warning!!!
+Enabling this option may result in the generation of very large files, while would also slow down encoding considerably. Enable with caution. Parameter recommended for debugging purposes.
+
+
+二、ReportFrameStats
+Class: Numeric (Integer)
+Description: Allows the generation of a file (stat_frame.dat) containing statistical information such as number of intra/inter coded blocks, modes used etc. (0 (default): disabled, 1: enabled)
+

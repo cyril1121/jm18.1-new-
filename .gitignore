@@ -6,7 +6,8 @@
 *.user
 *.userosscache
 *.sln.docstates
-
+*.yuv
+*.exe
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

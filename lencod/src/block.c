@@ -673,12 +673,11 @@ int residual_transform_quant_luma_4x4(Macroblock *currMB, ColorPlane pl, int blo
   imgpel **img_enc = p_Vid->enc_picture->p_curr_img;
   imgpel **mb_pred = currSlice->mb_pred[pl];
   int    **mb_ores = currSlice->mb_ores[pl];  
-  int   max_imgpel_value = p_Vid->max_imgpel_value;
-      int   **mb_rres = currSlice->mb_rres[pl];   
+
   if (check_zero(&mb_ores[block_y], block_x) != 0) // check if any coefficients in block
   {
-  //  int   **mb_rres = currSlice->mb_rres[pl];   
-
+    int   **mb_rres = currSlice->mb_rres[pl];   
+    int   max_imgpel_value = p_Vid->max_imgpel_value;
     int   qp = (p_Vid->yuv_format==YUV444 && !currSlice->P444_joined)? currMB->qp_scaled[(int)(p_Vid->colour_plane_id)]: currMB->qp_scaled[pl]; 
     QuantParameters   *p_Quant = p_Vid->p_Quant;
     QuantMethods quant_methods;
@@ -723,7 +722,7 @@ int residual_transform_quant_luma_4x4(Macroblock *currMB, ColorPlane pl, int blo
     {
      if(currSlice->slice_type==P_SLICE)
      {
-		 copy_image_data_4x4(&img_enc[currMB->pix_y + block_y], &mb_pred[block_y], currMB->pix_x + block_x, block_x);
+		 sample_reconstruct_p4x4 (currMB,b8,0,bx,by,&img_enc[currMB->pix_y + block_y], &mb_pred[block_y], &mb_rres[block_y], block_x, currMB->pix_x + block_x, BLOCK_SIZE, BLOCK_SIZE,list_mode, max_imgpel_value, DQ_BITS);
      }
 	 else
 	 {
@@ -736,7 +735,7 @@ int residual_transform_quant_luma_4x4(Macroblock *currMB, ColorPlane pl, int blo
     currSlice->cofAC[b8][b4][0][0] = 0;
 	if(currSlice->slice_type==P_SLICE)
     {
-		copy_image_data_4x4(&img_enc[currMB->pix_y + block_y], &mb_pred[block_y], currMB->pix_x + block_x, block_x);
+		sample_reconstruct_p4x4forzero(currMB,b8,0,bx,by,&img_enc[currMB->pix_y + block_y], &mb_pred[block_y], block_x, currMB->pix_x + block_x,list_mode, BLOCK_SIZE, BLOCK_SIZE);
 	}
 	else
 	{
@@ -1232,14 +1231,14 @@ int residual_transform_quant_chroma_4x4(Macroblock *currMB, int uv, int cr_cbp,i
 	  }
 	  else
 	  {
-		  copy_image_data(&p_Vid->enc_picture->imgUV[uv][currMB->pix_c_y], mb_pred, currMB->pix_c_x, 0, p_Vid->mb_cr_size_x, p_Vid->mb_cr_size_y);
+		sample_reconstruct_p8x8forzero(currMB,0,uv+1,&p_Vid->enc_picture->imgUV[uv][currMB->pix_c_y], mb_pred,0,currMB->pix_c_x,   p_Vid->mb_cr_size_x, p_Vid->mb_cr_size_y,list_mode,max_imgpel_value_uv, DQ_BITS);
 	  }
   }
 
   return cr_cbp;
 }
 
-/*
+
 int residual_transform_quant_chroma_4x4p(Macroblock *currMB, int uv, int cr_cbp,int list_mode[2])
 {
 	int i, j, n2, n1, coeff_ctr;
@@ -1498,13 +1497,13 @@ int residual_transform_quant_chroma_4x4p(Macroblock *currMB, int uv, int cr_cbp,
 		}
 		else
 		{
-			sample_reconstruct_p8x8forzero(currMB,0,uv+1,&p_Vid->enc_picture->imgUV[uv][currMB->pix_c_y], mb_pred,mb_rres,0,currMB->pix_c_x,   p_Vid->mb_cr_size_x, p_Vid->mb_cr_size_y,list_mode,max_imgpel_value_uv, DQ_BITS);
+			sample_reconstruct_p8x8forzero(currMB,0,uv+1,&p_Vid->enc_picture->imgUV[uv][currMB->pix_c_y], mb_pred,0,currMB->pix_c_x,   p_Vid->mb_cr_size_x, p_Vid->mb_cr_size_y,list_mode,max_imgpel_value_uv, DQ_BITS);
 		}
 	}
 
 	return cr_cbp;
 }
-*/
+
 static int Residual_DPCM_Chroma(int ipmode, int **ores, int **rres, int width, int height)
 {
   int i,j;

@@ -26,10 +26,6 @@
 #include "mc_prediction.h"
 #include "image.h"
 #include "mb_access.h"
-#ifndef cyuntest
-//#define cyuntest
-#endif
-
 void compute_residue_p16x16 (Macroblock *currMB,int block,int yuv,imgpel **curImg, imgpel **mpr, int **mb_rres, int mb_x, int opix_x, int   list_mode[2],int width, int height)
 {
 	VideoParameters *p_Vid = currMB->p_Vid;
@@ -51,50 +47,43 @@ void compute_residue_p16x16 (Macroblock *currMB,int block,int yuv,imgpel **curIm
   int	 block_y =  (block & 0x02);
    curr_mv = &mv_array[LIST_0][LIST_0][list_mode[LIST_0]][block_y][block_x];
   //MotionVector *mv = &motion[block_y][block_x].mv[LIST_0];
-
-
-  
-#ifdef cyuntest
- 
-  for (j = 0; j < height; j++)
-  {
-	  imgOrg = &curImg[j][opix_x];    
-	  imgPred = &mpr[j][mb_x];
-	  m7 = &mb_rres[j][mb_x]; 
-	  for (i = 0; i < width; i++)
-	  {
-		  *m7 = *imgOrg - *imgPred;
-		  *m7++;
-		  *imgOrg++; 
-		  *imgPred++;
-
-
-	  }
-  }
-#else
   num=height*width;
   for (j = 0; j < height; j++)
   {
-	  imgOrg = &curImg[j][opix_x];    
-	  imgPred = &mpr[j][mb_x];
-	  m7 = &mb_rres[j][mb_x]; 
-	  for (i = 0; i < width; i++)
-	  {
-		  sumR+=*imgOrg;
-		  sumD+=*imgPred;
-		  sumRD+= (*imgOrg)*(*imgPred);
-		  sumD2+=(*imgPred)*(*imgPred);
-		  *imgOrg++ ;
-		  *imgPred++;
-	  }
+    imgOrg = &curImg[j][opix_x];    
+    imgPred = &mpr[j][mb_x];
+    m7 = &mb_rres[j][mb_x]; 
+    for (i = 0; i < width; i++)
+    {
+    	sumR+=*imgOrg;
+		sumD+=*imgPred;
+		sumRD+= (*imgOrg)*(*imgPred);
+		sumD2+=(*imgPred)*(*imgPred);
+		*imgOrg++ ;
+		*imgPred++;
+    }
   }
-
-
+  
+  
   scale=(num*sumRD-sumD*sumR)/(num*sumD2-sumD*sumD);
+  if(0)
+  {
+	  if((scale>=0.995)&&(scale<=1.005))
+	  {
+	  	scale=1.00;
+	  }
+  	  //mv->offset[yuv]=(sumR-scale*sumD)/num;
+  }
+  else
+  {
+	  scale=1.00;
+	  //mv->offset[yuv]=0;
+
+  }
   curr_mv->scale[yuv]=scale*100;
   scale=(float)curr_mv->scale[yuv]/100;
   curr_mv->offset[yuv]=(sumR-scale*sumD)/num;
-  //curr_mv->offset[yuv]=sumR/num;
+
   for(j=0;j<4;j++)
   {
 	  for(i=0;i<4;i++)
@@ -110,10 +99,14 @@ void compute_residue_p16x16 (Macroblock *currMB,int block,int yuv,imgpel **curIm
     m7 = &mb_rres[j][mb_x]; 
     for (i = 0; i < width; i++)
     {
+		/*
+    	sumR+=*imgOrg;
+		sumD+=*imgPred;
+		sumRD+= (*imgOrg)*(*imgPred);
+		sumD2+=(*imgPred)*(*imgPred);*/
 		*m7++ = (*imgOrg++ - (int)(scale*(*imgPred++))-curr_mv->offset[yuv]);
     }
-  }  
-#endif
+  }   
 }
 
 void compute_residue_p8x8 (Macroblock *currMB,int block,int yuv,imgpel **curImg, imgpel **mpr, int **mb_rres, int mb_x, int opix_x,int   list_mode[2], int width, int height)
@@ -137,24 +130,6 @@ void compute_residue_p8x8 (Macroblock *currMB,int block,int yuv,imgpel **curImg,
   int	 block_y = (block & 0x02);
   curr_mv = &mv_array[LIST_0][LIST_0][list_mode[LIST_0]][block_y][block_x];
  // MotionVector *mv = &motion[block_y][block_x].mv[LIST_0];
-#ifdef cyuntest
-
-  for (j = 0; j < height; j++)
-  {
-	  imgOrg = &curImg[j][opix_x];    
-	  imgPred = &mpr[j][mb_x];
-	  m7 = &mb_rres[j][mb_x]; 
-	  for (i = 0; i < width; i++)
-	  {
-		  *m7 = *imgOrg - *imgPred;
-		  *m7++;
-		  *imgOrg++; 
-		  *imgPred++;
-
-
-	  }
-  }
-#else
   num=height*width;
   for (j = 0; j < height; j++)
   {
@@ -174,11 +149,24 @@ void compute_residue_p8x8 (Macroblock *currMB,int block,int yuv,imgpel **curImg,
   
   
   scale=(num*sumRD-sumD*sumR)/(num*sumD2-sumD*sumD);
+  if(0)
+  {
+	  if((scale>=0.995)&&(scale<=1.005))
+	  {
+	  	scale=1.00;
+	  }
+  	  //mv->offset[yuv]=(sumR-scale*sumD)/num;
+  }
+  else
+  {
+	  scale=1.00;
+	 // mv->offset[yuv]=0;
 
+  }
   curr_mv->scale[yuv]=scale*100;
   scale=(float)curr_mv->scale[yuv]/100;
   curr_mv->offset[yuv]=(sumR-scale*sumD)/num;
- //curr_mv->offset[yuv]=sumR/num;
+
   for(j=0;j<2;j++)
   {
 	  for(i=0;i<2;i++)
@@ -195,10 +183,15 @@ void compute_residue_p8x8 (Macroblock *currMB,int block,int yuv,imgpel **curImg,
     m7 = &mb_rres[j][mb_x]; 
     for (i = 0; i < width; i++)
     {
+		/*
+    	sumR+=*imgOrg;
+		sumD+=*imgPred;
+		sumRD+= (*imgOrg)*(*imgPred);
+		sumD2+=(*imgPred)*(*imgPred);
+		*/
 		*m7++ = (*imgOrg++ - (int)(scale*(*imgPred++))-curr_mv->offset[yuv]);
     }
-  } 
-#endif
+  }   
 }
 void compute_residue_p4x4 (Macroblock *currMB,int block,int yuv,int bx,int by,imgpel **curImg, imgpel **mpr, int **mb_rres, int mb_x, int opix_x,int   list_mode[2], int width, int height)
 {
@@ -223,24 +216,6 @@ void compute_residue_p4x4 (Macroblock *currMB,int block,int yuv,int bx,int by,im
   MotionVector *curr_mv = NULL;
   curr_mv = &mv_array[LIST_0][LIST_0][list_mode[LIST_0]][block_y][block_x];
   //MotionVector *mv = &motion[block_y][block_x].mv[LIST_0];
-#ifdef cyuntest
-
-  for (j = 0; j < height; j++)
-  {
-	  imgOrg = &curImg[j][opix_x];    
-	  imgPred = &mpr[j][mb_x];
-	  m7 = &mb_rres[j][mb_x]; 
-	  for (i = 0; i < width; i++)
-	  {
-		  *m7 = *imgOrg - *imgPred;
-		  *m7++;
-		  *imgOrg++; 
-		  *imgPred++;
-
-
-	  }
-  }
-#else
   num=height*width;
   for (j = 0; j < height; j++)
   {
@@ -260,12 +235,23 @@ void compute_residue_p4x4 (Macroblock *currMB,int block,int yuv,int bx,int by,im
   
   
   scale=(num*sumRD-sumD*sumR)/(num*sumD2-sumD*sumD);
+   if(0)
+  {
+	  if((scale>=0.995)&&(scale<=1.005))
+	  {
+	  	scale=1.00;
+	  }
+  	 // mv->offset[yuv]=(sumR-scale*sumD)/num;
+  }
+  else
+  {
+	  scale=1.00;
+	 // mv->offset[yuv]=0;
 
+  }
   curr_mv->scale[yuv]=scale*100;
   scale=(float)curr_mv->scale[yuv]/100;
- curr_mv->offset[yuv]=(sumR-scale*sumD)/num;
- //curr_mv->offset[yuv]=sumR/num;
-
+  curr_mv->offset[yuv]=(sumR-scale*sumD)/num;
   mv_array[LIST_0][LIST_0][list_mode[LIST_0]][block_y][block_x].scale[yuv]=curr_mv->scale[yuv];
   mv_array[LIST_0][LIST_0][list_mode[LIST_0]][block_y][block_x].offset[yuv]=curr_mv->offset[yuv];
   for (j = 0; j < height; j++)
@@ -275,10 +261,15 @@ void compute_residue_p4x4 (Macroblock *currMB,int block,int yuv,int bx,int by,im
     m7 = &mb_rres[j][mb_x]; 
     for (i = 0; i < width; i++)
     {
+		/*
+    	sumR+=*imgOrg;
+		sumD+=*imgPred;
+		sumRD+= (*imgOrg)*(*imgPred);
+		sumD2+=(*imgPred)*(*imgPred);
+		*/
 		*m7++ = (*imgOrg++ - (int)(scale*(*imgPred++))-curr_mv->offset[yuv]);
     }
-  }
-#endif
+  }   
 }
 
 void sample_reconstruct_p4x4 (Macroblock *currMB,int block,int yuv,int bx,int by,imgpel **curImg, imgpel **mpr, int **mb_rres, int mb_x, int opix_x, int width, int height,int   list_mode[2], int max_imgpel_value, int dq_bits)
@@ -291,7 +282,6 @@ void sample_reconstruct_p4x4 (Macroblock *currMB,int block,int yuv,int bx,int by
   imgpel *imgOrg, *imgPred;
   int    *m7;
   int i, j;
-  int sumD=0,average=0,num=0;
   float scale;
  // int  block_x = currMB->block_x +(block&0x01)*2+bx;
  // int	 block_y = currMB->block_y+(block&0x02)+by;
@@ -300,23 +290,6 @@ void sample_reconstruct_p4x4 (Macroblock *currMB,int block,int yuv,int bx,int by
    MotionVector ***** mv_array = currSlice->all_mv;
   MotionVector *curr_mv = NULL;
   curr_mv = &mv_array[LIST_0][LIST_0][list_mode[LIST_0]][block_y][block_x];
-#ifdef cyuntest
-
-for (j = 0; j < height; j++)
-{
-	imgOrg = &curImg[j][opix_x];
-	imgPred = &mpr[j][mb_x];
-	m7 = &mb_rres[j][mb_x]; 
-	for (i=0;i<width;i++)
-	{
-		*imgOrg = (imgpel) iClip1( max_imgpel_value, rshift_rnd_sf(*m7, dq_bits) + *imgPred);
-		*imgOrg++ ;
-		*m7++; 
-		*imgPred++;
-	}
-
-}
-#else
   scale=(float)curr_mv->scale[yuv]/100;
   for (j = 0; j < height; j++)
   {
@@ -324,11 +297,10 @@ for (j = 0; j < height; j++)
     imgPred = &mpr[j][mb_x];
     m7 = &mb_rres[j][mb_x]; 
     for (i=0;i<width;i++)
-      *imgOrg++ = (imgpel) iClip1( max_imgpel_value, (int)(scale*(*imgPred++))+curr_mv->offset[yuv]+rshift_rnd_sign(*m7++, dq_bits) );
+      *imgOrg++ = (imgpel) iClip1( max_imgpel_value, (int)(scale*(*imgPred++))+curr_mv->offset[yuv]+rshift_rnd_sf(*m7++, dq_bits) );
   }
-#endif
 }
-void sample_reconstruct_p4x4forzero (Macroblock *currMB,int block,int yuv,int bx,int by,imgpel **curImg, imgpel **mpr, int **mb_rres, int mb_x, int opix_x,int   list_mode[2], int width, int height, int max_imgpel_value, int dq_bits)
+void sample_reconstruct_p4x4forzero (Macroblock *currMB,int block,int yuv,int bx,int by,imgpel **curImg, imgpel **mpr,  int mb_x, int opix_x,int   list_mode[2], int width, int height)
 {
 	VideoParameters *p_Vid = currMB->p_Vid;
 	InputParameters *p_Inp = currMB->p_Inp;
@@ -338,8 +310,6 @@ void sample_reconstruct_p4x4forzero (Macroblock *currMB,int block,int yuv,int bx
   imgpel *imgOrg, *imgPred;
   int    *m7;
   int i, j;
-  int sumD=0,average=0,num=0;
-
   float scale;
   //int  block_x = currMB->block_x +(block&0x01)*2+bx;
  // int	 block_y = currMB->block_y+(block&0x02)+by;
@@ -348,33 +318,14 @@ void sample_reconstruct_p4x4forzero (Macroblock *currMB,int block,int yuv,int bx
   MotionVector ***** mv_array = currSlice->all_mv;
   MotionVector *curr_mv = NULL;
   curr_mv = &mv_array[LIST_0][LIST_0][list_mode[LIST_0]][block_y][block_x];
-#ifdef cyuntest
-
-  for (j = 0; j < height; j++)
-  {
-	  imgOrg = &curImg[j][opix_x];
-	  imgPred = &mpr[j][mb_x];
-	  m7 = &mb_rres[j][mb_x]; 
-	  for (i=0;i<width;i++)
-	  {
-		  *imgOrg = (imgpel) iClip1( max_imgpel_value, rshift_rnd_sf(*m7, dq_bits) + *imgPred);
-		  *imgOrg++ ;
-		  *m7++; 
-		  *imgPred++;
-	  }
-  }
-#else
-
   scale=(float)curr_mv->scale[yuv]/100;
   for (j = 0; j < height; j++)
   {
     imgOrg = &curImg[j][opix_x];
     imgPred = &mpr[j][mb_x];
-	m7 = &mb_rres[j][mb_x]; 
     for (i=0;i<width;i++)
-      *imgOrg++ = (imgpel) ((int)(scale*(*imgPred++))+curr_mv->offset[yuv]+rshift_rnd_sign(*m7++, dq_bits) );
+      *imgOrg++ = (imgpel) ((int)(scale*(*imgPred++))+curr_mv->offset[yuv] );
   }
-#endif
 }
 void sample_reconstruct_p16x16 (Macroblock *currMB,int block,int yuv,imgpel **curImg, imgpel **mpr, int **mb_rres, int mb_x, int opix_x, int width, int height,int   list_mode[2], int max_imgpel_value, int dq_bits)
 {
@@ -386,8 +337,6 @@ void sample_reconstruct_p16x16 (Macroblock *currMB,int block,int yuv,imgpel **cu
   imgpel *imgOrg, *imgPred;
   int    *m7;
   int i, j;
-  int sumD=0,average=0,num=0;
-
   float scale;
  // int  block_x = currMB->block_x + (block & 0x01)*2;
  // int  block_y = currMB->block_y + (block & 0x02);
@@ -396,23 +345,6 @@ void sample_reconstruct_p16x16 (Macroblock *currMB,int block,int yuv,imgpel **cu
   MotionVector ***** mv_array = currSlice->all_mv;
   MotionVector *curr_mv = NULL;
   curr_mv = &mv_array[LIST_0][LIST_0][list_mode[LIST_0]][block_y][block_x];
-#ifdef cyuntest
-
-  for (j = 0; j < height; j++)
-  {
-	  imgOrg = &curImg[j][opix_x];
-	  imgPred = &mpr[j][mb_x];
-	  m7 = &mb_rres[j][mb_x]; 
-	for (i=0;i<width;i++)
-	{
-		*imgOrg = (imgpel) iClip1( max_imgpel_value, rshift_rnd_sf(*m7, dq_bits) + *imgPred);
-		*imgOrg++ ;
-		*m7++; 
-		*imgPred++;
-	}  
-  }
-#else
-
   scale=(float)curr_mv->scale[yuv]/100;
   for (j = 0; j < height; j++)
   {
@@ -420,9 +352,8 @@ void sample_reconstruct_p16x16 (Macroblock *currMB,int block,int yuv,imgpel **cu
     imgPred = &mpr[j][mb_x];
     m7 = &mb_rres[j][mb_x]; 
     for (i=0;i<width;i++)
-      *imgOrg++ = (imgpel) iClip1( max_imgpel_value, (int)(scale*(*imgPred++))+curr_mv->offset[yuv]+rshift_rnd_sign(*m7++, dq_bits) );
+      *imgOrg++ = (imgpel) iClip1( max_imgpel_value, (int)(scale*(*imgPred++))+curr_mv->offset[yuv]+rshift_rnd_sf(*m7++, dq_bits) );
   }
-#endif
 }
 
 void sample_reconstruct_p8x8 (Macroblock *currMB,int block,int yuv,imgpel **curImg, imgpel **mpr, int **mb_rres, int mb_x, int opix_x, int width, int height, int   list_mode[2],int max_imgpel_value, int dq_bits)
@@ -435,8 +366,6 @@ void sample_reconstruct_p8x8 (Macroblock *currMB,int block,int yuv,imgpel **curI
   imgpel *imgOrg, *imgPred;
   int    *m7;
   int i, j;
-  int sumD=0,average=0,num=0;
-
   float scale;
  // int  block_x = currMB->block_x + (block & 0x01)*2;
  // int  block_y = currMB->block_y + (block & 0x02);
@@ -446,23 +375,6 @@ void sample_reconstruct_p8x8 (Macroblock *currMB,int block,int yuv,imgpel **curI
   MotionVector ***** mv_array = currSlice->all_mv;
   MotionVector *curr_mv = NULL;
   curr_mv = &mv_array[LIST_0][LIST_0][list_mode[LIST_0]][block_y][block_x];
-#ifdef cyuntest
-
-  for (j = 0; j < height; j++)
-  {
-	  imgOrg = &curImg[j][opix_x];
-	  imgPred = &mpr[j][mb_x];
-	  m7 = &mb_rres[j][mb_x]; 
-	  for (i=0;i<width;i++)
-	  {
-		  *imgOrg = (imgpel) iClip1( max_imgpel_value, rshift_rnd_sf(*m7, dq_bits) + *imgPred);
-		  *imgOrg++ ;
-		  *m7++; 
-		  *imgPred++;
-	  }  
-  }
-#else
-
   scale=(float)curr_mv->scale[yuv]/100;
   for (j = 0; j < height; j++)
   {
@@ -470,11 +382,10 @@ void sample_reconstruct_p8x8 (Macroblock *currMB,int block,int yuv,imgpel **curI
     imgPred = &mpr[j][mb_x];
     m7 = &mb_rres[j][mb_x]; 
     for (i=0;i<width;i++)
-      *imgOrg++ = (imgpel) iClip1( max_imgpel_value, (int)(scale*(*imgPred++))+curr_mv->offset[yuv]+rshift_rnd_sign(*m7++, dq_bits) );
+      *imgOrg++ = (imgpel) iClip1( max_imgpel_value, (int)(scale*(*imgPred++))+curr_mv->offset[yuv]+rshift_rnd_sf(*m7++, dq_bits) );
   }
-#endif
 }
-void sample_reconstruct_p8x8forzero (Macroblock *currMB,int block,int yuv,imgpel **curImg, imgpel **mpr,int **mb_rres,  int mb_x, int opix_x, int width, int height, int   list_mode[2],int max_imgpel_value, int dq_bits)
+void sample_reconstruct_p8x8forzero (Macroblock *currMB,int block,int yuv,imgpel **curImg, imgpel **mpr,  int mb_x, int opix_x, int width, int height, int   list_mode[2],int max_imgpel_value, int dq_bits)
 {
 	VideoParameters *p_Vid = currMB->p_Vid;
 	InputParameters *p_Inp = currMB->p_Inp;
@@ -484,8 +395,6 @@ void sample_reconstruct_p8x8forzero (Macroblock *currMB,int block,int yuv,imgpel
   imgpel *imgOrg, *imgPred;
   int    *m7;
   int i, j;
-  int sumD=0,average=0,num=0;
-
   float scale;
  // int  block_x = currMB->block_x + (block & 0x01)*2;
   //int  block_y = currMB->block_y + (block & 0x02);
@@ -494,33 +403,14 @@ void sample_reconstruct_p8x8forzero (Macroblock *currMB,int block,int yuv,imgpel
   MotionVector ***** mv_array = currSlice->all_mv;
   MotionVector *curr_mv = NULL;
   curr_mv = &mv_array[LIST_0][LIST_0][list_mode[LIST_0]][block_y][block_x];
-#ifdef cyuntest
-
-  for (j = 0; j < height; j++)
-  {
-	  imgOrg = &curImg[j][opix_x];
-	  imgPred = &mpr[j][mb_x];
-	  m7 = &mb_rres[j][mb_x]; 
-	  for (i=0;i<width;i++)
-	  {
-		  *imgOrg = (imgpel) iClip1( max_imgpel_value, rshift_rnd_sf(*m7, dq_bits) + *imgPred);
-		  *imgOrg++ ;
-		  *m7++; 
-		  *imgPred++;
-	  }  
-  }
-#else
-
   scale=(float)curr_mv->scale[yuv]/100;
   for (j = 0; j < height; j++)
   {
     imgOrg = &curImg[j][opix_x];
     imgPred = &mpr[j][mb_x];
-	m7 = &mb_rres[j][mb_x]; 
     for (i=0;i<width;i++)
-      *imgOrg++ = (imgpel) iClip1( max_imgpel_value, (int)(scale*(*imgPred++))+curr_mv->offset[yuv] +rshift_rnd_sign(*m7++, dq_bits));
+      *imgOrg++ = (imgpel) iClip1( max_imgpel_value, (int)(scale*(*imgPred++))+curr_mv->offset[yuv]);
   }
-#endif
 }
 
 
@@ -529,6 +419,7 @@ void compute_residue (imgpel **curImg, imgpel **mpr, int **mb_rres, int mb_x, in
   imgpel *imgOrg, *imgPred;
   int    *m7;
   int i, j;
+
 
   for (j = 0; j < height; j++)
   {

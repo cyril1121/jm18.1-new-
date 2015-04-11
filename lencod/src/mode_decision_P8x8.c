@@ -95,16 +95,16 @@ void submacroblock_mode_decision_p_slice(Macroblock *currMB,
   }
 #endif
   all_mv = &currSlice->all_mv[0][0][0][0];
-  
+  /*
   all_mv [0][0].mv_x = 0;
   all_mv [0][0].mv_y = 0;
-  all_mv [0][0].scale[0] =0;
+  all_mv [0][0].scale[0] =100;
   all_mv [0][0].offset[0] = 0;
-  all_mv [0][0].scale[1] =0;
+  all_mv [0][0].scale[1] =100;
   all_mv [0][0].offset[1] = 0;
-  all_mv [0][0].scale[2] =0;
+  all_mv [0][0].scale[2] =100;
   all_mv [0][0].offset[2] = 0;
- 
+  */
   if(p_Inp->subMBCodingState == 2)
     currSlice->store_coding_state(currMB, currSlice->p_RDO->cs_tmp);
 

@@ -773,9 +773,17 @@ MotionVector **all_mv ;
     
   if (p_Vid->P444_joined)
   {
-    distortion += compute_SSE8x8(&p_Vid->pImgOrg[1][currMB->opix_y + pay], &p_Vid->enc_picture->imgUV[0][currMB->pix_y + pay], currMB->pix_x + pax, currMB->pix_x + pax);
-    distortion += compute_SSE8x8(&p_Vid->pImgOrg[2][currMB->opix_y + pay], &p_Vid->enc_picture->imgUV[1][currMB->pix_y + pay], currMB->pix_x + pax, currMB->pix_x + pax);
-  }    
+	  if(currSlice->slice_type == P_SLICE)
+	  	{
+		  distortion += compute_SSE8x8(currMB,&p_Vid->pImgOrg[1][currMB->opix_y + pay], &p_Vid->enc_picture->imgUV[0][currMB->pix_y + pay], currMB->pix_x + pax, currMB->pix_x + pax);
+		  distortion += compute_SSE8x8(currMB,&p_Vid->pImgOrg[2][currMB->opix_y + pay], &p_Vid->enc_picture->imgUV[1][currMB->pix_y + pay], currMB->pix_x + pax, currMB->pix_x + pax);
+	  	}
+	  else
+	  	{
+		    distortion += compute_SSE8x8(&p_Vid->pImgOrg[1][currMB->opix_y + pay], &p_Vid->enc_picture->imgUV[0][currMB->pix_y + pay], currMB->pix_x + pax, currMB->pix_x + pax);
+		    distortion += compute_SSE8x8(&p_Vid->pImgOrg[2][currMB->opix_y + pay], &p_Vid->enc_picture->imgUV[1][currMB->pix_y + pay], currMB->pix_x + pax, currMB->pix_x + pax);
+	    } 
+  }
   
   // Early termination
   if (distortion >= min_rdcost)

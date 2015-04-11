@@ -877,7 +877,7 @@ int luma_residual_coding_16x16 (Macroblock* currMB,  //!< Current Macroblock to 
 		}
 		else
 		{
-			nonzero = currMB->residual_transform_quant_luma_4x4 (currMB, PLANE_Y, block_x, block_y, &coeff_cost, 0);
+			nonzero = currMB->residual_transform_quant_luma_4x4 (currMB, PLANE_Y, block_x, block_y, &coeff_cost, 0,list_mode);
 		}
           if (nonzero)
           {
@@ -1243,8 +1243,8 @@ void luma_residual_coding (Macroblock *currMB)
     	}
 	else if(currSlice->slice_type == P_SLICE)
 		{
-			compute_residue_p16x16 (currMB,0,0,&p_Vid->pCurImg[currMB->opix_y], *currSlice->mb_pred,*currSlice->mb_ores, 0, currMB->pix_x + 0,list_mode, 16, 16);
-			sample_reconstruct_p16x16 (currMB,0,0,&p_Vid->enc_picture->imgY[currMB->pix_y], *currSlice->mb_pred, *currSlice->mb_ores, 0, currMB->pix_x, 16, 16, list_mode,p_Vid->max_imgpel_value, DQ_BITS_8);
+			compute_residue_p16x16 (currMB,0,0,&p_Vid->pCurImg[currMB->opix_y], *currSlice->mb_pred,*currSlice->mb_ores, 0, currMB->pix_x,list_mode, 16, 16);
+			copy_image_data_16x16(&p_Vid->enc_picture->imgY[currMB->pix_y], *currSlice->mb_pred, currMB->pix_x, 0);
 		}
   }
   else 
@@ -1295,7 +1295,7 @@ void luma_residual_coding (Macroblock *currMB)
 			}
 	  else if(currSlice->slice_type == P_SLICE)
 			{	
-				sample_reconstruct_p16x16 (currMB,0,0,&p_Vid->enc_picture->imgY[currMB->pix_y], *currSlice->mb_pred, *currSlice->mb_ores, 0, currMB->pix_x, 16, 16,list_mode, p_Vid->max_imgpel_value, DQ_BITS_8);
+			copy_image_data_16x16(&p_Vid->enc_picture->imgY[currMB->pix_y], currSlice->mb_pred[0], currMB->pix_x, 0);
 			}
 
       //memset( currSlice->cofAC[0][0][0], 0, 2080 * sizeof(int)); // 4 * 4 * 2 * 65    
@@ -1550,14 +1550,14 @@ void chroma_residual_coding (Macroblock *currMB)
 		if (currSlice->NoResidueDirect)
 	    {
 	    
-		  compute_residue_p8x8(currMB,0,uv+1,&p_Vid->pImgOrg[uv + 1][currMB->opix_c_y ], currSlice->mb_pred[ uv + 1], currSlice->mb_ores[uv + 1], 0, currMB->pix_c_x, list_mode,p_Vid->mb_cr_size_x, p_Vid->mb_cr_size_y);
-	      sample_reconstruct_p8x8(currMB,0,uv+1,&p_Vid->enc_picture->imgUV[uv][currMB->pix_c_y], currSlice->mb_pred[ uv + 1], currSlice->mb_ores[uv + 1],0,currMB->pix_c_x,  p_Vid->mb_cr_size_x, p_Vid->mb_cr_size_y,list_mode,p_Vid->max_imgpel_value, DQ_BITS_8);
+		  //compute_residue_p8x8(currMB,0,uv+1,&p_Vid->pImgOrg[uv + 1][currMB->opix_c_y ], currSlice->mb_pred[ uv + 1], currSlice->mb_ores[uv + 1], 0, currMB->pix_c_x, list_mode,p_Vid->mb_cr_size_x, p_Vid->mb_cr_size_y);
+	          copy_image_data(&p_Vid->enc_picture->imgUV[uv][currMB->pix_c_y], currSlice->mb_pred[ uv + 1], currMB->pix_c_x, 0, p_Vid->mb_cr_size_x, p_Vid->mb_cr_size_y);
 	    }        
 	    else if (skipped)
 	    {
 	    
-		  compute_residue_p8x8(currMB,0,uv+1,&p_Vid->pImgOrg[uv + 1][currMB->opix_c_y ], currSlice->mb_pred[ uv + 1], currSlice->mb_ores[uv + 1], 0, currMB->pix_c_x,list_mode, p_Vid->mb_cr_size_x, p_Vid->mb_cr_size_y);
-	      sample_reconstruct_p8x8(currMB,0,uv+1,&p_Vid->enc_picture->imgUV[uv][currMB->pix_c_y], currSlice->mb_pred[ uv + 1], currSlice->mb_ores[uv + 1],0,currMB->pix_c_x,  p_Vid->mb_cr_size_x, p_Vid->mb_cr_size_y,list_mode,p_Vid->max_imgpel_value, DQ_BITS_8);
+		  //compute_residue_p8x8(currMB,0,uv+1,&p_Vid->pImgOrg[uv + 1][currMB->opix_c_y ], currSlice->mb_pred[ uv + 1], currSlice->mb_ores[uv + 1], 0, currMB->pix_c_x,list_mode, p_Vid->mb_cr_size_x, p_Vid->mb_cr_size_y);
+	           copy_image_data(&p_Vid->enc_picture->imgUV[uv][currMB->pix_c_y], currSlice->mb_pred[ uv + 1], currMB->pix_c_x, 0, p_Vid->mb_cr_size_x, p_Vid->mb_cr_size_y);
 	    }
 	    else
 	    {

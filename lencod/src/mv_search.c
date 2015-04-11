@@ -407,15 +407,24 @@ void init_motion_search_module (VideoParameters *p_Vid, InputParameters *p_Inp)
   p_Vid->spiral_search[0].mv_x = p_Vid->spiral_search[0].mv_y = 0;
   p_Vid->spiral_hpel_search[0].mv_x = p_Vid->spiral_hpel_search[0].mv_y = 0;
   p_Vid->spiral_qpel_search[0].mv_x = p_Vid->spiral_qpel_search[0].mv_y = 0;
-  p_Vid->spiral_search[0].scale[0]= p_Vid->spiral_search[0].offset[0]= 0;
-  p_Vid->spiral_hpel_search[0].scale[0]= p_Vid->spiral_hpel_search[0].offset[0]= 0;
-  p_Vid->spiral_qpel_search[0].scale[0]= p_Vid->spiral_qpel_search[0].offset[0]= 0;
-  p_Vid->spiral_search[0].scale[1]= p_Vid->spiral_search[0].offset[1]= 0;
-  p_Vid->spiral_hpel_search[0].scale[1]= p_Vid->spiral_hpel_search[0].offset[1]= 0;
-  p_Vid->spiral_qpel_search[0].scale[1]= p_Vid->spiral_qpel_search[0].offset[1]= 0;  
-  p_Vid->spiral_search[0].scale[2]= p_Vid->spiral_search[0].offset[2]= 0;
-  p_Vid->spiral_hpel_search[0].scale[2]= p_Vid->spiral_hpel_search[0].offset[2]= 0;
-  p_Vid->spiral_qpel_search[0].scale[2]= p_Vid->spiral_qpel_search[0].offset[2]= 0;
+  p_Vid->spiral_search[0].scale[0]=0; 
+  p_Vid->spiral_search[0].offset[0]= 0;
+  p_Vid->spiral_hpel_search[0].scale[0]=0;
+  p_Vid->spiral_hpel_search[0].offset[0]= 0;
+  p_Vid->spiral_qpel_search[0].scale[0]=0;
+  p_Vid->spiral_qpel_search[0].offset[0]= 0;
+  p_Vid->spiral_search[0].scale[1]=0;
+  p_Vid->spiral_search[0].offset[1]= 0;
+  p_Vid->spiral_hpel_search[0].scale[1]=0;
+  p_Vid->spiral_hpel_search[0].offset[1]= 0;
+  p_Vid->spiral_qpel_search[0].scale[1]=0;
+  p_Vid->spiral_qpel_search[0].offset[1]= 0;  
+  p_Vid->spiral_search[0].scale[2]=0;
+  p_Vid->spiral_search[0].offset[2]= 0;
+  p_Vid->spiral_hpel_search[0].scale[2]=0;
+  p_Vid->spiral_hpel_search[0].offset[2]= 0;
+  p_Vid->spiral_qpel_search[0].scale[2]=0;
+  p_Vid->spiral_qpel_search[0].offset[2]= 0;
   for (k=1, l=1; l <= imax(1,search_range); l++)
   {
     for (i=-l+1; i< l; i++)
@@ -495,7 +504,7 @@ void init_motion_search_module (VideoParameters *p_Vid, InputParameters *p_Inp)
       p_Vid->spiral_qpel_search[k].offset[0]= 0;
 	  p_Vid->spiral_hpel_search[k].scale[1]=   0;
 	  p_Vid->spiral_hpel_search[k].offset[1]=   0;
-	  p_Vid->spiral_qpel_search[k].scale[1]=   0;
+	  p_Vid->spiral_qpel_search[k].scale[1]=  0;
 	  p_Vid->spiral_qpel_search[k].offset[1]= 0;
 	  p_Vid->spiral_hpel_search[k].scale[2]=   0;
 	  p_Vid->spiral_hpel_search[k].offset[2]=   0;
@@ -513,7 +522,7 @@ void init_motion_search_module (VideoParameters *p_Vid, InputParameters *p_Inp)
 	  p_Vid->spiral_search[k].offset[2]=     0;
       p_Vid->spiral_hpel_search[k].mv_x =   (short) (l<<1);
       p_Vid->spiral_hpel_search[k].mv_y =   (short) (i<<1);
-	  p_Vid->spiral_hpel_search[k].scale[0]=   0;
+	  p_Vid->spiral_hpel_search[k].scale[0]=  0;
       p_Vid->spiral_hpel_search[k].offset[0]=   0;
 	  p_Vid->spiral_qpel_search[k].scale[0]=   0;
       p_Vid->spiral_qpel_search[k].offset[0]= 0;
@@ -1519,8 +1528,8 @@ void FindSkipModeMotionVector (Macroblock *currMB)
 
   if (zeroMotionAbove || zeroMotionLeft)
   {
-    //memset(&all_mv [0][0], 0, 16 * sizeof(MotionVector)); // 4 * 4
-	for (by = 0;by < 4;by++)
+    memset(&all_mv [0][0], 0, 16 * sizeof(MotionVector)); // 4 * 4
+	/*for (by = 0;by < 4;by++)
 		for (bx = 0;bx < 4;bx++)
 		{
 			all_mv [by][bx].mv_x = 0;
@@ -1531,7 +1540,7 @@ void FindSkipModeMotionVector (Macroblock *currMB)
 			all_mv [by][bx].offset[1] = 0;
 			all_mv [by][bx].scale[2] =100;
 			all_mv [by][bx].offset[2] = 0;
-		}
+		}*/
   }
   else
   {

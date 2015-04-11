@@ -8,6 +8,15 @@
 *.sln.docstates
 *.yuv
 *.exe
+*.IAB
+*.IAD
+*.IMB
+*.IMD
+*.PRI
+*.PS
+*.c.bak
+
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -18,6 +27,8 @@ x86/
 build/
 bld/
 [Oo]bj/
+bin/*.txt
+Debug_Win32_vc9/
 
 # Roslyn cache directories
 *.ide/

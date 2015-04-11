@@ -30,6 +30,7 @@ bld/
 bin/*.txt
 Debug_Win32_vc9/
 
+
 # Roslyn cache directories
 *.ide/
 
